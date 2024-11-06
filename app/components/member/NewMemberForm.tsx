@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MemberFormValues, memberSchema } from "@/lib/schema/NewMemberReg";
+import { apiCall } from "@/lib/apiClient";
 
 export default function NewMemberForm() {
   const router = useRouter();
@@ -30,20 +31,9 @@ export default function NewMemberForm() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/member", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to create member");
-      }
-
+      await apiCall("/member", "POST", data); // Call the API function
       reset(); // Clear the form
+      router.refresh();
       router.push("/home"); // Redirect to the home page
     } catch (err: any) {
       console.error(err.message || "An error occurred");

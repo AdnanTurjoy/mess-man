@@ -1,44 +1,63 @@
-'use client'
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Image from "next/image";
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import Image from 'next/image'
-import { useContext } from 'react'
-import { ThemeContext } from '../components/Provider'
-import TitlePage from '../components/TitlePage'
+import TitlePage from "../components/TitlePage";
+import { apiCall } from "@/lib/apiClient";
 
-function DashboardPage() {
-    const theme = useContext(ThemeContext);
+export default async function DashboardPage() {
+  //   const allMember = await apiFetch("/member");
 
-    return (
-        <>
-            <TitlePage title="Home" description="Discover a new songs from various muscian" />
-            <Card className='mt-10 border-dashed'>
-                <CardContent>
-                    <center>
-                        <Image
-                            className='m-10'
-                            width={300}
-                            height={300}
-                            priority
-                            src={theme?.theme === 'dark' ? "/team_engineering_white.svg" : "/team_engineering.svg"}
-                            alt="illustration.svg"
-                        />
-                        <CardHeader>
-                            <CardTitle className='font-bold'>{`That's It`}</CardTitle>
-                            <CardDescription className='text-slate-300'>Replace this with your content</CardDescription>
-                        </CardHeader>
+  const allMember = await apiCall("/member", "GET");
 
-                        <Button asChild>
-                            <a href="https://ui.shadcn.com/">Shadcn UI</a>
-                        </Button>
+  return (
+    <>
+      <TitlePage
+        title="Home"
+        description="Discover a new songs from various muscian"
+      />
+      <Card className="mt-10 border-dashed">
+        <CardContent>
+          <center>
+            <Image
+              className="m-10"
+              width={300}
+              height={300}
+              priority
+              src={"/team_engineering_white.svg"}
+              alt="illustration.svg"
+            />
+            <CardHeader>
+              <CardTitle className="font-bold">{`That's It`}</CardTitle>
+              <CardDescription className="text-slate-300">
+                Replace this with your content
+              </CardDescription>
+            </CardHeader>
 
-                    </center>
-                </CardContent>
-            </Card>
-
-        </>
-    )
+            <Button asChild>
+              <a href="https://ui.shadcn.com/">Shadcn UI</a>
+            </Button>
+          </center>
+          {allMember?.map((member: any) => (
+            <div key={member._id}>
+              <b>
+                {" "}
+                <p>{member.name}</p>
+              </b>
+              <p>{member.phoneNumber}</p>
+              <p>{member.fbAccount}</p>
+              <p>{member.nidNumber}</p>
+              <p>{member.permanentAddress}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </>
+  );
 }
-
-export default DashboardPage
