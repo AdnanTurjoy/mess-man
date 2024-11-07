@@ -14,7 +14,7 @@ import { apiCall } from "@/lib/apiClient";
 export default async function DashboardPage() {
   //   const allMember = await apiFetch("/member");
 
-  const allMember = await apiCall("/member", "GET");
+  const member = await apiCall("/member/672b182234ca7d2c711cb3e1", "GET");
 
   return (
     <>
@@ -44,18 +44,16 @@ export default async function DashboardPage() {
               <a href="https://ui.shadcn.com/">Shadcn UI</a>
             </Button>
           </center>
-          {allMember?.map((member: any) => (
-            <div key={member._id}>
-              <b>
-                {" "}
-                <p>{member.name}</p>
-              </b>
-              <p>{member.phoneNumber}</p>
-              <p>{member.fbAccount}</p>
-              <p>{member.nidNumber}</p>
-              <p>{member.permanentAddress}</p>
-            </div>
-          ))}
+          <div key={member._id}>
+            <b>
+              {" "}
+              <p>{member.name}</p>
+            </b>
+            <p>{member.phoneNumber}</p>
+            <p>{member.fbAccount}</p>
+            <p>{member.nidNumber}</p>
+            <p>{member.permanentAddress}</p>
+          </div>
         </CardContent>
       </Card>
     </>
