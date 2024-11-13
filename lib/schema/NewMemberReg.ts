@@ -7,7 +7,7 @@ export const memberSchema = z.object({
     .string()
     .min(1, "Phone number is required")
     .regex(/^(\+?\d{1,3}[- ]?)?\d{10}$/, "Invalid phone number"),
-  fbAccount: z.string().url("Invalid URL").optional(),
+  // fbAccount: z.string().url("Invalid URL").optional(),
   nidNumber: z
     .string()
     .min(1, "NID Number is required")

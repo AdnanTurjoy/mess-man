@@ -28,3 +28,27 @@ export async function GET(request: Request, { params }: Params) {
     );
   }
 }
+
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+  await connectToDatabase();
+  const { id } = params; 
+  try {
+    const { name, phoneNumber, fbAccount, nidNumber, permanentAddress } = await req.json();
+
+    // Create a new Member document with a reference to the existing User's ID
+    const newMember = new Member({
+      name,
+      phoneNumber,
+      fbAccount,
+      nidNumber,
+      permanentAddress,
+      user: id,
+    });
+
+    await newMember.save();
+    return NextResponse.json(newMember, { status: 201 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to create member' }, { status: 500 });
+  }
+}

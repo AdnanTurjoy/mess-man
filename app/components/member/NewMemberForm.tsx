@@ -31,7 +31,7 @@ export default function NewMemberForm() {
     setLoading(true);
 
     try {
-      await apiCall("/member", "POST", data); // Call the API function
+      await apiCall("/member/672a56ee65eee8552bf3344e", "POST", data); // Call the API function
       reset(); // Clear the form
       router.refresh();
       router.push("/home"); // Redirect to the home page

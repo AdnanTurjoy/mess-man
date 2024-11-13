@@ -25,7 +25,11 @@ function LoginForm() {
                 className: "bg-green-500",
                 description: "Redirect to home page",
             })
-            router.replace('/home');
+            localStorage.setItem('user',"672a567865eee8552bf3344a");
+            localStorage.setItem('token', "bshhshjvsjksd"); // Assuming you get a token as well
+
+        // Redirect to a protected page
+        router.push('/home');
             setLoading(false);
         }, 2000);
     }
