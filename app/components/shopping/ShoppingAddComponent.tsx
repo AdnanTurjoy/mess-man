@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,14 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Member } from '../member/member';
+import { useToast } from "@/components/ui/use-toast"; // Optional: for better error messages
 
-// Define props interface
 interface ShoppingFormProps {
-  memberList: Array<Member>;
+  memberList: Array<{
+    id: string;
+    name: string;
+  }>;
 }
 
-// Define the validation schema
 const shoppingFormSchema = z.object({
   date: z.string().min(1, "Date is required"),
   cost: z.string()
@@ -32,13 +33,17 @@ const shoppingFormSchema = z.object({
 type ShoppingFormValues = z.infer<typeof shoppingFormSchema>
 
 export function ShoppingForm({ memberList }: ShoppingFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast(); // Optional: for better error messages
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
     setValue,
-    watch
+    watch,
+    setError
   } = useForm<ShoppingFormValues>({
     resolver: zodResolver(shoppingFormSchema),
     defaultValues: {
@@ -46,10 +51,38 @@ export function ShoppingForm({ memberList }: ShoppingFormProps) {
       shoppingDetails: '',
     }
   });
-  console.log(memberList)
+
+  // Check date availability before submitting
+  const checkDateAvailability = async (date: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/shopping?date=${date}`);
+      const data = await response.json();
+      return data.isAvailable;
+    } catch (error) {
+      console.error('Error checking date availability:', error);
+      return false;
+    }
+  };
 
   const onSubmit = async (data: ShoppingFormValues) => {
     try {
+      setIsSubmitting(true);
+
+      // Check date availability first
+      const isDateAvailable = await checkDateAvailability(data.date);
+      if (!isDateAvailable) {
+        setError('date', {
+          type: 'manual',
+          message: 'A shopping entry already exists for this date'
+        });
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "A shopping entry already exists for this date."
+        });
+        return;
+      }
+
       const formattedData = {
         ...data,
         cost: Number(data.cost),
@@ -64,17 +97,29 @@ export function ShoppingForm({ memberList }: ShoppingFormProps) {
         body: JSON.stringify(formattedData),
       });
 
-      if (!response.ok) throw new Error('Failed to submit shopping entry');
+      const result = await response.json();
 
-      alert('Shopping entry submitted successfully');
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to submit shopping entry');
+      }
+
+      toast({
+        title: "Success",
+        description: "Shopping entry submitted successfully"
+      });
       reset();
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Failed to submit shopping entry');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to submit shopping entry'
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Handle member selection
   const handleMemberSelect = (value: string) => {
     setValue('memberName', value, {
       shouldValidate: true
@@ -137,9 +182,9 @@ export function ShoppingForm({ memberList }: ShoppingFormProps) {
             <SelectValue placeholder="Select a member" />
           </SelectTrigger>
           <SelectContent>
-            {memberList?.map((member) => (
+            {memberList.map((member) => (
               <SelectItem 
-                key={member._id} 
+                key={member.id} 
                 value={member.name}
               >
                 {member.name}
@@ -154,14 +199,19 @@ export function ShoppingForm({ memberList }: ShoppingFormProps) {
 
       {/* Fourth Row - Buttons */}
       <div className="flex gap-4 pt-4">
-        <Button type="submit" className="flex-1">
-          Submit
+        <Button 
+          type="submit" 
+          className="flex-1"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit'}
         </Button>
         <Button 
           type="button" 
           variant="outline" 
           onClick={() => reset()} 
           className="flex-1"
+          disabled={isSubmitting}
         >
           Reset
         </Button>
